@@ -1,0 +1,17 @@
+version: "3.8"
+name: tg_bot
+
+services:
+  bot:
+    restart: no
+    cpu_count: 1
+    shm_size: 128mb
+    build:
+      dockerfile_inline: |
+        FROM python:3.12-alpine
+        WORKDIR /opt/tg_bot/
+        COPY bot.conf /opt/tg_bot/
+        COPY python_bot.py /opt/tg_bot/
+        COPY requirements.txt /opt/tg_bot/
+        RUN pip install --no-cache-dir -r requirements.txt
+        CMD python ./python_bot.py
