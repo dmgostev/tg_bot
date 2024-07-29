@@ -9,15 +9,17 @@ from yaml.loader import SafeLoader
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 
+MESS_MAX_LENGTH=4096
+
 def config():
 
-    if not os.path.exists('.\\log'):
+    if not os.path.exists('log'):
         os.mkdir('log')
     
     script_dir = os.path.abspath(os.path.dirname(__file__))
 
     global conf_values 
-    conf_values = yaml.load(open(script_dir+'\\bot.conf', 'r'), Loader=SafeLoader)
+    conf_values = yaml.load(open(os.path.join(script_dir,'bot.conf'), 'r'), Loader=SafeLoader)
 
     LOGGING_CONFIG = {
         "version": 1,
@@ -31,7 +33,7 @@ def config():
                 "formatter": "default",
                 "level": conf_values.get('log_level'),
                 "class": "logging.handlers.RotatingFileHandler",
-                "filename": conf_values.get('path')+"\\logfile.log",
+                "filename": os.path.join(conf_values.get('path'),'logfile.log'),
                 "maxBytes": conf_values.get('max_log_size')*1024,
                 "backupCount": conf_values.get('max_log_files')-1,
             },
@@ -76,7 +78,7 @@ def echo (update: Update, context):
     update.message.reply_text("suck it, i will not be repeating for you")
 
 def findPhoneNumbersCommand (update: Update, context):
-    update.message.reply_text('Введите текст для поиска телефонных номеров: ')
+    update.message.reply_text('Введите текст для поиска телефонных номеров: \n/stop чтобы остановить выполнение')
     return 'findPhoneNumbers'
 
 def findPhoneNumbers (update: Update, context):
@@ -99,7 +101,7 @@ def findPhoneNumbers (update: Update, context):
     update.message.reply_text(phoneNumbers) # Отправляем сообщение пользователю
 
 def findEmailsCommand (update: Update, context):
-    update.message.reply_text('Введите текст для поиска почтовых адресов: ')
+    update.message.reply_text('Введите текст для поиска почтовых адресов: \n/stop чтобы остановить выполнение')
     return 'findEmails'
 
 def findEmails (update: Update, context):
@@ -121,7 +123,7 @@ def findEmails (update: Update, context):
     update.message.reply_text(emails) # Отправляем сообщение пользователю
 
 def verifyPasswordCommand (update: Update, context):
-    update.message.reply_text('Введите пароль: ')
+    update.message.reply_text('Введите пароль: \n/stop чтобы остановить выполнение')
     return 'verifyPassword'
 
 def verifyPassword (update: Update, context):
@@ -139,65 +141,73 @@ def verifyPassword (update: Update, context):
     update.message.reply_text(f'Пароль "{goodPasswordString[0]}" хороший!')
 
 def getRelease (update: Update, context):
-    update.message.reply_text("====== Release info ======\n"+\
-        sshConnectAndExec(command='hostnamectl'))
+    update.message.reply_text(f'====== Release info ======\n\
+        {sshConnectAndExec(command='hostnamectl')}')
 
 def getUname (update: Update, context):
-    update.message.reply_text("====== Host info ======\n"+\
-        sshConnectAndExec(command='uname -a'))
+    update.message.reply_text(f'====== Host info ======\n\
+        {sshConnectAndExec(command='uname -a')}')
 
 def getUptime (update: Update, context):
-    update.message.reply_text("====== Uptime info ======\n"+\
-        sshConnectAndExec(command='uptime'))
+    update.message.reply_text(f'====== Uptime info ======\n\
+        {sshConnectAndExec(command='uptime')}')
 
 def getDf (update: Update, context):
-    update.message.reply_text("====== Disk space info ======\n"+\
-        sshConnectAndExec(command='df -h'))
+    update.message.reply_text(f'====== Disk space info ======\n\
+        {sshConnectAndExec(command='df -h')}')
 
 def getFree (update: Update, context):
-    update.message.reply_text("====== Memory info ======\n"+\
-        sshConnectAndExec(command='free'))
+    update.message.reply_text(f'====== Memory info ======\n\
+        {sshConnectAndExec(command='free')}')
 
 def getMpstat (update: Update, context):
-    update.message.reply_text("====== Load info ======\n"+\
-        sshConnectAndExec(command='mpstat -A'))
+    update.message.reply_text(f'====== Load info ======\n\
+        {sshConnectAndExec(command='mpstat -A')}')
 
 def getW (update: Update, context):
-    update.message.reply_text("====== Active users ======\n"+\
-        sshConnectAndExec(command='w'))
+    update.message.reply_text(f'====== Active users ======\n\
+        {sshConnectAndExec(command='w')}')
 
 def getAuths (update: Update, context):
-    update.message.reply_text("====== 10 last auth attempts ======\n"+\
-        sshConnectAndExec(command='\
+    update.message.reply_text(f'====== 10 last auth attempts ======\n\
+        {sshConnectAndExec(command='\
             grep authentication /var/log/auth.log* | tail -n10 |\
             sed \'s/^.*acct="//g\' | sed \'s/".*$//g\' | sort | uniq -c | \
-            awk \'{print $2 " account logged "  $1 " times"}\''))
+            awk \'{print $2 " account logged "  $1 " times"}\'')}')
 
 def getCritical (update: Update, context):
-    update.message.reply_text("====== 10 last critical events ======\n"+\
-        sshConnectAndExec(command='cat /var/log/syslog* | grep -P "(crit|CRIT)" | tail -n10'))
+    update.message.reply_text(f'====== 10 last critical events ======\n\
+        {sshConnectAndExec(command='cat /var/log/syslog* | grep -P "(crit|CRIT)" | tail -n10')}')
 
 def getPs (update: Update, context):
-    update.message.reply_text("====== Running processes info ======\n"+\
-        sshConnectAndExec(command='ps -aux | sort -rk3'))
+    data = f'====== Running processes info ======\n{sshConnectAndExec(command='ps -aux | sort -rk3')}'
+    for x in range(0, len(data), MESS_MAX_LENGTH):
+        mess = data[x: x + MESS_MAX_LENGTH]
+        update.message.reply_text(mess)
 
 def getSs (update: Update, context):
-    update.message.reply_text("====== Open ports info ======\n"+\
-        sshConnectAndExec(command='ss'))
+    data = f'====== Open ports info ======\n{sshConnectAndExec(command='ss')}'
+    for x in range(0, len(data), MESS_MAX_LENGTH):
+            mess = data[x: x + MESS_MAX_LENGTH]
+            update.message.reply_text(mess)
 
 def getAptList (update: Update, context):
-    update.message.reply_text("====== Installed packages ======\n"+\
-        sshConnectAndExec(command='dpkg --list | grep -P "^(ii|rc)"'))
+    data = f'====== Installed packages ======\n{sshConnectAndExec(command='dpkg --list | grep -P "^(ii|rc)"')}'
+    for x in range(0, len(data), MESS_MAX_LENGTH):
+            mess = data[x: x + MESS_MAX_LENGTH]
+            update.message.reply_text(mess)
 
 def getServices (update: Update, context):
-    update.message.reply_text("====== Running processes ======\n"+\
-        sshConnectAndExec(command='systemctl | grep active'))
+    data = f'====== Running processes ======\n{sshConnectAndExec(command='systemctl | grep active')}'
+    for x in range(0, len(data), MESS_MAX_LENGTH):
+                mess = data[x: x + MESS_MAX_LENGTH]
+                update.message.reply_text(mess)
 
 def help (update: Update, context):
     update.message.reply_text(\
 'List of available commands:\n'+\
-'/find_email - поиск почтовых адресов в тексте\n'+\
-'/find_phone_number - поиск телефонных номеров в тексте в форматах: '+\
+'/find_emails - поиск почтовых адресов в тексте\n'+\
+'/find_phone_numbers - поиск телефонных номеров в тексте в форматах: '+\
 '8XXXXXXXXXX, 8(XXX)XXXXXXX, 8 XXX XXX XX XX, 8 (XXX) XXX XX XX, 8-XXX-XXX-XX-XX\n'+\
 '/verify_password - проверка пароля на сложность\n'+\
 '/get_release - информация о релизе системы\n'+\
@@ -229,7 +239,7 @@ def main():
 
     # Обработчики диалога
     convHandlerFindPhoneNumbers = ConversationHandler(
-        entry_points=[CommandHandler('findPhoneNumbers', findPhoneNumbersCommand)],
+        entry_points=[CommandHandler('find_phone_numbers', findPhoneNumbersCommand)],
         states={
             'findPhoneNumbers': [MessageHandler(Filters.text & ~Filters.command, findPhoneNumbers)],
         },
@@ -237,7 +247,7 @@ def main():
     )
 
     convHandlerFindEmails = ConversationHandler(
-        entry_points=[CommandHandler('findEmails', findEmailsCommand)],
+        entry_points=[CommandHandler('find_emails', findEmailsCommand)],
         states={
             'findEmails': [MessageHandler(Filters.text & ~Filters.command, findEmails)],
         },

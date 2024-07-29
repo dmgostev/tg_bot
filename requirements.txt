@@ -1,0 +1,5 @@
+python-telegram-bot==13.7
+paramiko==3.4.0
+requests==2.32.3
+urllib3==1.26.15
+PyYAML==6.0.1
