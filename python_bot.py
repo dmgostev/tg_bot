@@ -70,10 +70,6 @@ def start (update: Update, context):
     user = update.effective_user
     update.message.reply_text(f'Привет {user.full_name}!')
 
-def stop (update: Update, context):
-    update.message.reply_text('Stopped')
-    return ConversationHandler.END # Завершаем работу обработчика диалога
-
 def echo (update: Update, context):
     update.message.reply_text("suck it, i will not be repeating for you")
 
@@ -92,13 +88,14 @@ def findPhoneNumbers (update: Update, context):
 
     if not phoneNumberList: # Обрабатываем случай, когда номеров телефонов нет
         update.message.reply_text('Телефонные номера не найдены')
-        return
+        return ConversationHandler.END
     
     phoneNumbers = '' # Создаем строку, в которую будем записывать номера телефонов
     for i in range(len(phoneNumberList)):
         phoneNumbers += f'{i+1}. {phoneNumberList[i][0]}\n' # Записываем очередной номер
         
     update.message.reply_text(phoneNumbers) # Отправляем сообщение пользователю
+    return ConversationHandler.END
 
 def findEmailsCommand (update: Update, context):
     update.message.reply_text('Введите текст для поиска почтовых адресов: \n/stop чтобы остановить выполнение')
@@ -114,13 +111,14 @@ def findEmails (update: Update, context):
 
     if not emailsList: # Обрабатываем случай, когда адресов нет
         update.message.reply_text('Почтовые адреса не найдены')
-        return # Завершаем выполнение функции
+        return ConversationHandler.END # Завершаем выполнение функции
     
     emails = '' # Создаем строку, в которую будем записывать почтовые адреса
     for i in range(len(emailsList)):
         emails += f'{i+1}. {emailsList[i]}\n' # Записываем очередной адрес
         
     update.message.reply_text(emails) # Отправляем сообщение пользователю
+    return ConversationHandler.END
 
 def verifyPasswordCommand (update: Update, context):
     update.message.reply_text('Введите пароль: \n/stop чтобы остановить выполнение')
@@ -136,9 +134,10 @@ def verifyPassword (update: Update, context):
 
     if not goodPasswordString: # Обрабатываем случай, когда адресов нет
         update.message.reply_text('Плохой пароль')
-        return # Завершаем выполнение функции
+        return ConversationHandler.END # Завершаем выполнение функции
 
     update.message.reply_text(f'Пароль "{goodPasswordString[0]}" хороший!')
+    return ConversationHandler.END
 
 def getRelease (update: Update, context):
     update.message.reply_text(f'====== Release info ======\n\
@@ -243,7 +242,7 @@ def main():
         states={
             'findPhoneNumbers': [MessageHandler(Filters.text & ~Filters.command, findPhoneNumbers)],
         },
-        fallbacks=[CommandHandler('stop', stop)]
+        fallbacks=[]
     )
 
     convHandlerFindEmails = ConversationHandler(
@@ -251,7 +250,7 @@ def main():
         states={
             'findEmails': [MessageHandler(Filters.text & ~Filters.command, findEmails)],
         },
-        fallbacks=[CommandHandler('stop', stop)]
+        fallbacks=[]
     )
 
     convHandlerVerifyPassword = ConversationHandler(
@@ -259,7 +258,7 @@ def main():
         states={
             'verifyPassword': [MessageHandler(Filters.text & ~Filters.command, verifyPassword)],
         },
-        fallbacks=[CommandHandler('stop', stop)]
+        fallbacks=[]
     )
 
 	#Регистрируем обработчики
