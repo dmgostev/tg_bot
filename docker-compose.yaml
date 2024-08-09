@@ -32,6 +32,12 @@ services:
     ports:
       - "6666:5432"
 
+  pgadmin:
+    image: dockette/adminer:latest
+    restart: always
+    ports:
+      - "8000:80"
+
 volumes:
   postgres_data:
     name: PG_DATA_VOLUME
