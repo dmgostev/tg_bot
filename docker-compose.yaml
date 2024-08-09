@@ -15,3 +15,25 @@ services:
         COPY requirements.txt /opt/tg_bot/
         RUN pip install --no-cache-dir -r requirements.txt
         CMD python ./python_bot.py
+
+  db:
+    image: postgres:16.2
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_logs:/var/lib/postgresql/log
+    env_file:
+      - path: ./default.env
+        required: true
+      - path: ./custom.env
+        required: false
+    ports:
+      - "6666:5432"
+
+volumes:
+  postgres_data:
+    name: PG_DATA_VOLUME
+  postgres_logs:
+    name: PG_LOG_VOLUME
