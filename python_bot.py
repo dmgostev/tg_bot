@@ -287,7 +287,7 @@ def main():
     token=conf_values.get('token')
     
     #creating db and tables if they do not exist
-    initializationTables()
+    initializationDatabase()
 
     #апдейтер тянет хуками сообщения из тг бота
     updater = Updater(token, use_context=True)
