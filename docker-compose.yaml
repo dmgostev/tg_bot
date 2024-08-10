@@ -7,8 +7,8 @@ services:
     cpu_count: 1
     shm_size: 128mb
     depends_on:
-      - db
-      - pgadmin
+      db:
+        condition: service_started
     build:
       dockerfile_inline: |
         FROM python:3.12-alpine
