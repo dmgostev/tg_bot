@@ -52,7 +52,7 @@ def config():
 
 def initializationTables():
 
-    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=6666)
+    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=5432)
     connection.autocommit=True
 
     cur = connection.cursor()
@@ -69,7 +69,7 @@ def initializationTables():
 
 def initializationDatabase():
 
-    connection = psycopg2.connect(user="user", password="password", host="192.168.162.130", port=6666)
+    connection = psycopg2.connect(user="user", password="password", host="192.168.162.130", port=5432)
     connection.autocommit=True
 
     cur = connection.cursor()
