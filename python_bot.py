@@ -4,6 +4,7 @@ import re
 import paramiko
 import yaml
 import os
+import psycopg2
 
 from yaml.loader import SafeLoader
 from telegram import Update
@@ -49,6 +50,60 @@ def config():
 
     logging.config.dictConfig(LOGGING_CONFIG)
 
+def initializationTables():
+
+    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=6666)
+    connection.autocommit=True
+
+    cur = connection.cursor()
+    
+    cur.execute('''CREATE TABLE IF NOT EXISTS emails (\
+                ID serial PRIMARY KEY,\
+                email varchar(256) NOT NULL)''')
+    
+    cur.execute('''CREATE TABLE IF NOT EXISTS phones (\
+            ID serial PRIMARY KEY,\
+            phone varchar(20) NOT NULL)''')
+
+    connection.close()
+
+def initializationDatabase():
+
+    connection = psycopg2.connect(user="user", password="password", host="192.168.162.130", port=6666)
+    connection.autocommit=True
+
+    cur = connection.cursor()
+
+    cur.execute('''SELECT datname FROM pg_database''')
+    res = cur.fetchall()
+
+    if "tg_bot" not in res:
+        cur.execute('''CREATE DATABASE tg_bot''')
+
+    initializationTables()
+
+    connection.close()
+
+def insertIntoEmailsTable(email):
+
+    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=6666)
+    connection.autocommit=True
+    cur = connection.cursor()
+
+    cur.execute(f'''INSERT INTO emails (email) VALUES ({email})''')
+
+    connection.close()
+
+def insertIntoPhonesTable(phone):
+
+    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=6666)
+    connection.autocommit=True
+    cur = connection.cursor()
+
+    cur.execute(f'''INSERT INTO phones (phone) VALUES ('{phone}')''')
+
+    connection.close()
+
 def sshConnectAndExec(command):
 
     host = conf_values.get('host')
@@ -92,6 +147,7 @@ def findPhoneNumbers (update: Update, context):
     
     phoneNumbers = '' # Создаем строку, в которую будем записывать номера телефонов
     for i in range(len(phoneNumberList)):
+        insertIntoPhonesTable(phoneNumberList[i][0])
         phoneNumbers += f'{i+1}. {phoneNumberList[i][0]}\n' # Записываем очередной номер
         
     update.message.reply_text(phoneNumbers) # Отправляем сообщение пользователю
@@ -115,6 +171,7 @@ def findEmails (update: Update, context):
     
     emails = '' # Создаем строку, в которую будем записывать почтовые адреса
     for i in range(len(emailsList)):
+        insertIntoEmailsTable(emailsList[i])
         emails += f'{i+1}. {emailsList[i]}\n' # Записываем очередной адрес
         
     update.message.reply_text(emails) # Отправляем сообщение пользователю
@@ -228,7 +285,10 @@ def main():
     #getting configuration
     config()
     token=conf_values.get('token')
-    chat_id=conf_values.get('chat_id')
+    
+    #creating db and tables if they do not exist
+    initializationTables()
+    initializationDatabase()
 
     #апдейтер тянет хуками сообщения из тг бота
     updater = Updater(token, use_context=True)

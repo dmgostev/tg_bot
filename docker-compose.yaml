@@ -30,16 +30,24 @@ services:
       - path: ./custom.env
         required: false
     ports:
-      - "6666:5432"
+      - "5432:5432"
 
   pgadmin:
-    image: dockette/adminer:latest
+    image: dpage/pgadmin4:latest
     restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=SuperSecret
+      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True
+      - PGADMIN_CONFIG_LOGIN_BANNER="Authorised users only!"
+      - PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10
     ports:
       - "8000:80"
 
 volumes:
   postgres_data:
     name: PG_DATA_VOLUME
+    external: true
   postgres_logs:
     name: PG_LOG_VOLUME
+    external: true
