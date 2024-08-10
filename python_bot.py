@@ -86,7 +86,7 @@ def initializationDatabase():
 
 def insertIntoEmailsTable(email):
 
-    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=6666)
+    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=5432)
     connection.autocommit=True
     cur = connection.cursor()
 
@@ -96,7 +96,7 @@ def insertIntoEmailsTable(email):
 
 def insertIntoPhonesTable(phone):
 
-    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=6666)
+    connection = psycopg2.connect(dbname="tg_bot", user="user", password="password", host="192.168.162.130", port=5432)
     connection.autocommit=True
     cur = connection.cursor()
 
@@ -288,7 +288,6 @@ def main():
     
     #creating db and tables if they do not exist
     initializationTables()
-    initializationDatabase()
 
     #апдейтер тянет хуками сообщения из тг бота
     updater = Updater(token, use_context=True)
