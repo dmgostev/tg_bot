@@ -47,7 +47,5 @@ services:
 volumes:
   postgres_data:
     name: PG_DATA_VOLUME
-    external: true
   postgres_logs:
     name: PG_LOG_VOLUME
-    external: true
