@@ -77,7 +77,7 @@ def initializationDatabase():
     cur.execute('''SELECT datname FROM pg_database''')
     res = cur.fetchall()
 
-    if "tg_bot" not in res:
+    if ('tg_bot',) not in res:
         cur.execute('''CREATE DATABASE tg_bot''')
 
     initializationTables()
