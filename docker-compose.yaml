@@ -23,7 +23,7 @@ services:
     restart: no
     cpu_count: 1
     shm_size: 128mb
-    depends_on: 
+    depends_on:
       - db
     build:
       dockerfile_inline: |
